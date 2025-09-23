@@ -2,8 +2,19 @@ name: Snowflake SQL Dev Deployment
 
 on:
   push:
+    branches:
+      - master
+      - develop
     paths:
       - "sql/**"
+      - "bootstrap/**"
+  pull_request:
+    branches:
+      - master
+      - develop
+    paths:
+      - "sql/**"
+      - "bootstrap/**"
   workflow_dispatch:
 
 jobs:
