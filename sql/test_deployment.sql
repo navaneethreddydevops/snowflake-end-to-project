@@ -11,4 +11,3 @@ CREATE TABLE IF NOT EXISTS test_deployment (
 -- Insert a test record
 INSERT INTO test_deployment (id, test_name)
 VALUES (1, 'Initial Deployment Test');
-
