@@ -1,29 +1,35 @@
-# SQL Scripts
+# SQL Migration Scripts
 
-This directory contains all the SQL scripts that will be deployed to Snowflake environments.
+This directory contains all the SQL migration scripts for the Snowflake project. The scripts are executed in order based on their version numbers using schemachange.
 
-## Directory Structure
-```
-sql/
-├── tables/          # Table creation scripts
-├── views/           # View creation scripts
-├── procedures/      # Stored procedures
-└── migrations/      # Schema migration scripts
+## Version Control Guidelines
+
+### File Naming Convention
+- All migration scripts must follow the naming pattern: `V[Version]__[Description].sql`
+- Example: `V1.0.0__setup.sql`, `V1.0.1__create_tables.sql`
+- Double underscore `__` is required between version and description
+- Version numbers should follow semantic versioning (MAJOR.MINOR.PATCH)
+
+### Script Headers
+Each SQL file must include the following header:
+```sql
+!set variable_substitution=true;
+-- Change History Information
+-- VERSION:      [version number]
+-- DESCRIPTION:  [brief description]
+-- CREATED:      [creation date]
+-- AUTHOR:       [author name/team]
 ```
 
-## Naming Convention
-Follow these naming conventions for SQL scripts:
-- Use lowercase with underscores
-- Include version numbers for migrations
-- Prefix with type of object being created/modified
+### Change History Table
+Schemachange tracks all deployments in:
+```sql
+DATABASE.SCHEMACHANGE.CHANGE_HISTORY
+```
 
-Examples:
-```
-V001_create_customer_table.sql
-V002_add_email_to_customer.sql
-create_sales_summary_view.sql
-sp_process_daily_sales.sql
-```
+### Current Scripts
+1. `V1.0.0__setup.sql` - Initial environment setup and access management
+2. `V1.0.1__test_deployment.sql` - Test deployment creating sample tables
 
 ## Best Practices
 1. Always include proper comments in SQL scripts

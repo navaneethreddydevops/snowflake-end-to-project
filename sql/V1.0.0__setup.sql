@@ -1,5 +1,9 @@
--- Environment setup and access management
 !set variable_substitution=true;
+-- Change History Information
+-- VERSION:      1.0.0
+-- DESCRIPTION:  Initial environment setup and access management
+-- CREATED:      2025-09-23
+-- AUTHOR:       DevOps Team
 
 -- Step 1: Create objects with SYSADMIN
 USE ROLE SYSADMIN;

@@ -1,7 +1,9 @@
--- Test deployment SQL file
--- Creates a test table in the environment
-
 !set variable_substitution=true;
+-- Change History Information
+-- VERSION:      1.0.1
+-- DESCRIPTION:  Test deployment creating sample tables
+-- CREATED:      2025-09-23
+-- AUTHOR:       DevOps Team
 
 USE ROLE &SNOWSQL_ENVVAR_ROLE;
 USE DATABASE &SNOWSQL_ENVVAR_DB;
