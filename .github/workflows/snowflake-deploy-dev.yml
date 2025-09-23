@@ -6,6 +6,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  validate:
+    name: Validate SQL Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SQLFluff
+        run: pip install sqlfluff
+
+      - name: Lint SQL files
+        run: |
+          echo "Running SQL validation..."
+          # Only lint the actual SQL files, skip the setup file
+          for sql_file in sql/[1-9]*.sql; do
+            if [ -f "$sql_file" ]; then
+              echo "Validating $sql_file"
+              sqlfluff lint "$sql_file" --dialect snowflake
+            fi
+          done
+          
   deploy-dev:
     name: Deploy to DEV
     runs-on: ubuntu-latest
