@@ -92,7 +92,7 @@ jobs:
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "Step 1: Running schemachange"
           pip install sqlfluff schemachange
-          schemachange -f $GITHUB_WORKSPACE/sql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -r $SNOWSQL_ROLE -w $SNOWSQL_WH -d $SNOWSQL_DB -c $SNOWSQL_DB.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
+          # schemachange -f $GITHUB_WORKSPACE/sql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -r $SNOWSQL_ROLE -w $SNOWSQL_WH -d $SNOWSQL_DB -c $SNOWSQL_DB.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
 
           # Configure SnowSQL
           echo "Step 2: Configuring SnowSQL"
