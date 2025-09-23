@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install SQLFluff
-        run: pip install sqlfluff
+        run: pip install sqlfluff schemachange
 
       - name: Lint SQL files
         run: |
@@ -62,7 +62,13 @@ jobs:
           SNOWSQL_WH: DEV_WH
           SNOWSQL_SCHEMA: PUBLIC
         run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "Step 1: Running schemachange"
+
+          schemachange -f $GITHUB_WORKSPACE/sql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -r $SNOWSQL_ROLE -w $SNOWSQL_WH -d $SNOWSQL_DB -c $SNOWSQL_DB.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
+
           # Configure SnowSQL
+          echo "Step 2: Configuring SnowSQL"
           mkdir -p ~/.snowsql
           cat > ~/.snowsql/config << EOF
           [connections.dev]

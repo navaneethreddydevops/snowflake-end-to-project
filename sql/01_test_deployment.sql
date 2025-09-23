@@ -25,3 +25,6 @@ CREATE TABLE IF NOT EXISTS test_deployment_two (
     test_name VARCHAR(50),
     created_at TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
+
+drop table if exists test_deployment_two;
+drop table if exists test_deployment;
