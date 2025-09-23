@@ -1,0 +1,137 @@
+name: Snowflake SQL Deployment
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "sql/**"
+  pull_request:
+    branches: [master]
+    paths:
+      - "sql/**"
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  SNOWSQL_VERSION: "1.2.24"
+
+jobs:
+  validate:
+    name: Validate SQL Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SQLFluff
+        run: pip install sqlfluff
+
+      - name: Lint SQL files
+        run: |
+          sqlfluff lint sql/ --dialect snowflake
+
+  deploy-dev:
+    name: Deploy to DEV
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+          SNOWSQL_DEST=~/snowflake SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+
+      - name: Deploy to DEV
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME: ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: DEV_ROLE
+          SNOWFLAKE_WAREHOUSE: DEV_WH
+          SNOWFLAKE_DATABASE: DEV_DB
+        run: |
+          echo "Running SQL scripts in DEV environment"
+          for sql_file in sql/*.sql; do
+            ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
+                               -u "$SNOWFLAKE_USERNAME" \
+                               -p "$SNOWFLAKE_PASSWORD" \
+                               -r "$SNOWFLAKE_ROLE" \
+                               -w "$SNOWFLAKE_WAREHOUSE" \
+                               -d "$SNOWFLAKE_DATABASE" \
+                               -f "$sql_file"
+          done
+
+  deploy-qa:
+    name: Deploy to QA
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment:
+      name: qa
+      url: ${{ steps.deploy.outputs.deployment-url }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+          SNOWSQL_DEST=~/snowflake SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+
+      - name: Deploy to QA
+        id: deploy
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME: ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: QA_ROLE
+          SNOWFLAKE_WAREHOUSE: QA_WH
+          SNOWFLAKE_DATABASE: QA_DB
+        run: |
+          echo "Running SQL scripts in QA environment"
+          for sql_file in sql/*.sql; do
+            ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
+                               -u "$SNOWFLAKE_USERNAME" \
+                               -p "$SNOWFLAKE_PASSWORD" \
+                               -r "$SNOWFLAKE_ROLE" \
+                               -w "$SNOWFLAKE_WAREHOUSE" \
+                               -d "$SNOWFLAKE_DATABASE" \
+                               -f "$sql_file"
+          done
+
+  deploy-prod:
+    name: Deploy to Production
+    needs: deploy-qa
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: ${{ steps.deploy.outputs.deployment-url }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+          SNOWSQL_DEST=~/snowflake SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+
+      - name: Deploy to PROD
+        id: deploy
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME: ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: PROD_ROLE
+          SNOWFLAKE_WAREHOUSE: PROD_WH
+          SNOWFLAKE_DATABASE: PROD_DB
+        run: |
+          echo "Running SQL scripts in PROD environment"
+          for sql_file in sql/*.sql; do
+            ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
+                               -u "$SNOWFLAKE_USERNAME" \
+                               -p "$SNOWFLAKE_PASSWORD" \
+                               -r "$SNOWFLAKE_ROLE" \
+                               -w "$SNOWFLAKE_WAREHOUSE" \
+                               -d "$SNOWFLAKE_DATABASE" \
+                               -f "$sql_file"
+          done
