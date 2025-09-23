@@ -70,8 +70,8 @@ jobs:
           # Deploy SQL files
           export PATH=/usr/bin:$PATH
           
-          # First execute setup with ACCOUNTADMIN
-          echo "Executing setup with ACCOUNTADMIN..."
+          # Execute setup script with necessary role switches
+          echo "Executing setup script..."
           snowsql -c dev -f sql/00_setup.sql \
             --variable SNOWSQL_ENVVAR_ROLE=DEV_ROLE \
             --variable SNOWSQL_ENVVAR_DB=DEV_DB \
