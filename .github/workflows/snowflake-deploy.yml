@@ -47,7 +47,14 @@ jobs:
       - name: Install SnowSQL
         run: |
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+          mkdir -p ~/snowflake ~/.snowsql
           SNOWSQL_DEST=~/snowflake SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
+          echo "SNOWSQL_ACCOUNT=${{ secrets.SNOWFLAKE_ACCOUNT }}" > ~/.snowsql/config
+          echo "SNOWSQL_USER=${{ secrets.SNOWFLAKE_USERNAME }}" >> ~/.snowsql/config
+          echo "SNOWSQL_ROLE=$SNOWFLAKE_ROLE" >> ~/.snowsql/config
+          echo "SNOWSQL_DATABASE=$SNOWFLAKE_DATABASE" >> ~/.snowsql/config
+          echo "SNOWSQL_WAREHOUSE=$SNOWFLAKE_WAREHOUSE" >> ~/.snowsql/config
+          chmod 600 ~/.snowsql/config
 
       - name: Deploy to DEV
         env:
@@ -60,23 +67,18 @@ jobs:
         run: |
           echo "Running SQL scripts in DEV environment"
           # First run the setup script
-          ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
-                             -u "$SNOWFLAKE_USERNAME" \
-                             -p "$SNOWFLAKE_PASSWORD" \
-                             -D env_role="$SNOWFLAKE_ROLE" \
-                             -D env_db="$SNOWFLAKE_DATABASE" \
-                             -D env_wh="$SNOWFLAKE_WAREHOUSE" \
-                             -D env_schema="RAW" \
-                             -f sql/00_setup.sql
+          export SNOWSQL_PWD="$SNOWFLAKE_PASSWORD"
+          ~/snowflake/snowsql -f sql/00_setup.sql \
+                             --variable env_role="$SNOWFLAKE_ROLE" \
+                             --variable env_db="$SNOWFLAKE_DATABASE" \
+                             --variable env_wh="$SNOWFLAKE_WAREHOUSE" \
+                             --variable env_schema="RAW"
           
           # Then run all other SQL files
           for sql_file in sql/[1-9]*.sql; do
             if [ -f "$sql_file" ]; then
               echo "Executing $sql_file"
-              ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
-                                 -u "$SNOWFLAKE_USERNAME" \
-                                 -p "$SNOWFLAKE_PASSWORD" \
-                                 -f "$sql_file"
+              ~/snowflake/snowsql -f "$sql_file"
             fi
           done
 
