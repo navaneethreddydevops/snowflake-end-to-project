@@ -25,11 +25,15 @@ jobs:
         run: pip install sqlfluff
 
       - name: Lint SQL files
-        continue-on-error: true
         run: |
           echo "Running SQL validation..."
-          sqlfluff lint sql/ --dialect snowflake --exclude-rules parsing
-          # We continue even if linting fails due to variable substitutions
+          # Only lint the actual SQL files, skip the setup file
+          for sql_file in sql/[1-9]*.sql; do
+            if [ -f "$sql_file" ]; then
+              echo "Validating $sql_file"
+              sqlfluff lint "$sql_file" --dialect snowflake
+            fi
+          done
 
   deploy-dev:
     name: Deploy to DEV
@@ -55,16 +59,26 @@ jobs:
           SNOWFLAKE_DATABASE: DEV_DB
         run: |
           echo "Running SQL scripts in DEV environment"
+          # First run the setup script
           ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
                              -u "$SNOWFLAKE_USERNAME" \
                              -p "$SNOWFLAKE_PASSWORD" \
-                             -r "$SNOWFLAKE_ROLE" \
-                             -w "$SNOWFLAKE_WAREHOUSE" \
-                             -d "$SNOWFLAKE_DATABASE" \
+                             -v env_role="$SNOWFLAKE_ROLE" \
                              -v env_db="$SNOWFLAKE_DATABASE" \
                              -v env_wh="$SNOWFLAKE_WAREHOUSE" \
                              -v env_schema="RAW" \
-                             -f sql/deploy.sql
+                             -f sql/00_setup.sql
+          
+          # Then run all other SQL files
+          for sql_file in sql/[1-9]*.sql; do
+            if [ -f "$sql_file" ]; then
+              echo "Executing $sql_file"
+              ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
+                                 -u "$SNOWFLAKE_USERNAME" \
+                                 -p "$SNOWFLAKE_PASSWORD" \
+                                 -f "$sql_file"
+            fi
+          done
 
   deploy-qa:
     name: Deploy to QA
