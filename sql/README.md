@@ -13,13 +13,27 @@ This directory contains all the SQL migration scripts for the Snowflake project.
 ### Script Headers
 Each SQL file must include the following header:
 ```sql
-!set variable_substitution=true;
 -- Change History Information
 -- VERSION:      [version number]
 -- DESCRIPTION:  [brief description]
 -- CREATED:      [creation date]
 -- AUTHOR:       [author name/team]
 ```
+
+### Using Variables
+Schemachange supports binding variables that can be used in SQL scripts. Use the following syntax:
+```sql
+USE ROLE IDENTIFIER($ROLE);
+USE DATABASE IDENTIFIER($DATABASE);
+USE WAREHOUSE IDENTIFIER($WAREHOUSE);
+USE SCHEMA IDENTIFIER($SCHEMA);
+```
+
+Available variables:
+- `$ROLE` - Target Snowflake role
+- `$DATABASE` - Target database
+- `$WAREHOUSE` - Target warehouse
+- `$SCHEMA` - Target schema
 
 ### Change History Table
 Schemachange tracks all deployments in:
