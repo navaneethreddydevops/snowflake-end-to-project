@@ -52,15 +52,16 @@ jobs:
           SNOWFLAKE_DATABASE: DEV_DB
         run: |
           echo "Running SQL scripts in DEV environment"
-          for sql_file in sql/*.sql; do
-            ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
-                               -u "$SNOWFLAKE_USERNAME" \
-                               -p "$SNOWFLAKE_PASSWORD" \
-                               -r "$SNOWFLAKE_ROLE" \
-                               -w "$SNOWFLAKE_WAREHOUSE" \
-                               -d "$SNOWFLAKE_DATABASE" \
-                               -f "$sql_file"
-          done
+          ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
+                             -u "$SNOWFLAKE_USERNAME" \
+                             -p "$SNOWFLAKE_PASSWORD" \
+                             -r "$SNOWFLAKE_ROLE" \
+                             -w "$SNOWFLAKE_WAREHOUSE" \
+                             -d "$SNOWFLAKE_DATABASE" \
+                             -v env_db="$SNOWFLAKE_DATABASE" \
+                             -v env_wh="$SNOWFLAKE_WAREHOUSE" \
+                             -v env_schema="RAW" \
+                             -f sql/deploy.sql
 
   deploy-qa:
     name: Deploy to QA
