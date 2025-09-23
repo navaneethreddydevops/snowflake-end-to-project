@@ -38,6 +38,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # - name: Install OpenSSL dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y openssl libssl-dev alien
+
       - name: Install SnowSQL
         run: |
           curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
