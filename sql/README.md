@@ -21,19 +21,21 @@ Each SQL file must include the following header:
 ```
 
 ### Using Variables
-Schemachange supports binding variables that can be used in SQL scripts. Use the following syntax:
+Schemachange supports variable substitution in SQL scripts using the following syntax:
 ```sql
-USE ROLE IDENTIFIER($ROLE);
-USE DATABASE IDENTIFIER($DATABASE);
-USE WAREHOUSE IDENTIFIER($WAREHOUSE);
-USE SCHEMA IDENTIFIER($SCHEMA);
+USE ROLE {{ ROLE }};
+USE DATABASE {{ DATABASE }};
+USE WAREHOUSE {{ WAREHOUSE }};
+USE SCHEMA {{ SCHEMA }};
 ```
 
 Available variables:
-- `$ROLE` - Target Snowflake role
-- `$DATABASE` - Target database
-- `$WAREHOUSE` - Target warehouse
-- `$SCHEMA` - Target schema
+- `{{ ROLE }}` - Target Snowflake role
+- `{{ DATABASE }}` - Target database
+- `{{ WAREHOUSE }}` - Target warehouse
+- `{{ SCHEMA }}` - Target schema
+
+These variables are passed to schemachange using the `--vars` parameter in the deployment workflow.
 
 ### Change History Table
 Schemachange tracks all deployments in:
