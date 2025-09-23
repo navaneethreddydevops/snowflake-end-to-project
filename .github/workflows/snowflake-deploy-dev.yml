@@ -2,19 +2,7 @@ name: Snowflake SQL Dev Deployment
 
 on:
   push:
-    branches:
-      - master
-      - develop
-    paths:
-      - "sql/**"
-      - "bootstrap/**"
-  pull_request:
-    branches:
-      - master
-      - develop
-    paths:
-      - "sql/**"
-      - "bootstrap/**"
+    branches: [develop]
   workflow_dispatch:
 
 jobs:
@@ -25,6 +13,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install OpenSSL dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssl libssl-dev
 
       - name: Install SnowSQL
         run: |
