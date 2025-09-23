@@ -77,8 +77,9 @@ jobs:
             --variable SNOWSQL_ENVVAR_DB=DEV_DB \
             --variable SNOWSQL_ENVVAR_WH=DEV_WH \
             --variable SNOWSQL_ENVVAR_SCHEMA=PUBLIC
-          
-          # Then execute remaining SQL files with DEV_ROLE
+
+          # Execute deployment scripts
+          echo "Executing deployment scripts..."
           for sql_file in sql/[1-9]*.sql; do
             if [ -f "$sql_file" ]; then
               echo "Executing $sql_file"
