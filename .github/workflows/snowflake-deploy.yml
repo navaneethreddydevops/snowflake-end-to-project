@@ -44,16 +44,44 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install SnowSQL
+      - name: Install and Configure SnowSQL
         run: |
+          # Download and install SnowSQL
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
-          mkdir -p ~/snowflake ~/.snowsql
+          mkdir -p ~/snowflake
           SNOWSQL_DEST=~/snowflake SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-${{ env.SNOWSQL_VERSION }}-linux_x86_64.bash
-          echo "SNOWSQL_ACCOUNT=${{ secrets.SNOWFLAKE_ACCOUNT }}" > ~/.snowsql/config
-          echo "SNOWSQL_USER=${{ secrets.SNOWFLAKE_USERNAME }}" >> ~/.snowsql/config
-          echo "SNOWSQL_ROLE=$SNOWFLAKE_ROLE" >> ~/.snowsql/config
-          echo "SNOWSQL_DATABASE=$SNOWFLAKE_DATABASE" >> ~/.snowsql/config
-          echo "SNOWSQL_WAREHOUSE=$SNOWFLAKE_WAREHOUSE" >> ~/.snowsql/config
+          
+          # Create SnowSQL config directory
+          mkdir -p ~/.snowsql
+          
+          # Create SnowSQL config file with proper connection details
+          cat > ~/.snowsql/config << EOF
+          [connections.dev]
+          accountname = ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          username = ${{ secrets.SNOWFLAKE_USERNAME }}
+          password = ${{ secrets.SNOWFLAKE_PASSWORD }}
+          rolename = DEV_ROLE
+          warehousename = DEV_WH
+          dbname = DEV_DB
+
+          [connections.qa]
+          accountname = ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          username = ${{ secrets.SNOWFLAKE_USERNAME }}
+          password = ${{ secrets.SNOWFLAKE_PASSWORD }}
+          rolename = QA_ROLE
+          warehousename = QA_WH
+          dbname = QA_DB
+
+          [connections.prod]
+          accountname = ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          username = ${{ secrets.SNOWFLAKE_USERNAME }}
+          password = ${{ secrets.SNOWFLAKE_PASSWORD }}
+          rolename = PROD_ROLE
+          warehousename = PROD_WH
+          dbname = PROD_DB
+          EOF
+          
+          # Set proper permissions
           chmod 600 ~/.snowsql/config
 
       - name: Deploy to DEV
@@ -67,8 +95,7 @@ jobs:
         run: |
           echo "Running SQL scripts in DEV environment"
           # First run the setup script
-          export SNOWSQL_PWD="$SNOWFLAKE_PASSWORD"
-          ~/snowflake/snowsql -f sql/00_setup.sql \
+          ~/snowflake/snowsql -c dev -f sql/00_setup.sql \
                              --variable env_role="$SNOWFLAKE_ROLE" \
                              --variable env_db="$SNOWFLAKE_DATABASE" \
                              --variable env_wh="$SNOWFLAKE_WAREHOUSE" \
@@ -78,7 +105,7 @@ jobs:
           for sql_file in sql/[1-9]*.sql; do
             if [ -f "$sql_file" ]; then
               echo "Executing $sql_file"
-              ~/snowflake/snowsql -f "$sql_file"
+              ~/snowflake/snowsql -c dev -f "$sql_file"
             fi
           done
 
