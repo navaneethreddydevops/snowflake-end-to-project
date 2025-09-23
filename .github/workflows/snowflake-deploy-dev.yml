@@ -25,9 +25,10 @@ jobs:
               sqlfluff lint "$sql_file" --dialect snowflake
             fi
           done
-          
+
   deploy-dev:
     name: Deploy to DEV
+    needs: validate
     runs-on: ubuntu-latest
     environment: dev
 
@@ -74,3 +75,4 @@ jobs:
               snowsql -c dev -f "$sql_file"
             fi
           done
+          
