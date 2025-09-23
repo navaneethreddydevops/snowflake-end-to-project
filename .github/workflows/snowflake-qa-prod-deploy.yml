@@ -1,0 +1,143 @@
+name: Snowflake SQL QA and PROD Deployment
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'sql/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate SQL Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SQLFluff
+        run: pip install sqlfluff
+
+      - name: Lint SQL files
+        run: |
+          echo "Running SQL validation..."
+          # Only lint the actual SQL files, skip the setup file
+          for sql_file in sql/[1-9]*.sql; do
+            if [ -f "$sql_file" ]; then
+              echo "Validating $sql_file"
+              sqlfluff lint "$sql_file" --dialect snowflake
+            fi
+          done
+
+  deploy-qa:
+    name: Deploy to QA
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: qa
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install OpenSSL dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssl libssl-dev alien
+
+      - name: Install SnowSQL
+        run: |
+          curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
+          sudo alien -i snowsql.rpm
+          export PATH=/usr/bin:$PATH
+
+      - name: Configure and Deploy to QA
+        env:
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWSQL_USER: ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWSQL_ROLE: QA_ROLE
+          SNOWSQL_DB: QA_DB
+          SNOWSQL_WH: QA_WH
+          SNOWSQL_SCHEMA: PUBLIC
+        run: |
+          # Configure SnowSQL
+          mkdir -p ~/.snowsql
+          cat > ~/.snowsql/config << EOF
+          [connections.qa]
+          accountname = $SNOWSQL_ACCOUNT
+          username = $SNOWSQL_USER
+          password = $SNOWSQL_PWD
+          rolename = $SNOWSQL_ROLE
+          warehousename = $SNOWSQL_WH
+          dbname = $SNOWSQL_DB
+          EOF
+          chmod 600 ~/.snowsql/config
+
+          # Deploy SQL files
+          echo "Executing SQL files..."
+          for sql_file in sql/*.sql; do
+            if [ -f "$sql_file" ]; then
+              echo "Executing $sql_file"
+              snowsql -c qa -f "$sql_file" \
+                --variable SNOWSQL_ENVVAR_ROLE=$SNOWSQL_ROLE \
+                --variable SNOWSQL_ENVVAR_DB=$SNOWSQL_DB \
+                --variable SNOWSQL_ENVVAR_WH=$SNOWSQL_WH \
+                --variable SNOWSQL_ENVVAR_SCHEMA=$SNOWSQL_SCHEMA
+            fi
+          done
+
+  deploy-prod:
+    name: Deploy to PROD
+    needs: deploy-qa
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install OpenSSL dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssl libssl-dev alien
+
+      - name: Install SnowSQL
+        run: |
+          curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
+          sudo alien -i snowsql.rpm
+          export PATH=/usr/bin:$PATH
+
+      - name: Configure and Deploy to PROD
+        env:
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWSQL_USER: ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWSQL_ROLE: PROD_ROLE
+          SNOWSQL_DB: PROD_DB
+          SNOWSQL_WH: PROD_WH
+          SNOWSQL_SCHEMA: PUBLIC
+        run: |
+          # Configure SnowSQL
+          mkdir -p ~/.snowsql
+          cat > ~/.snowsql/config << EOF
+          [connections.prod]
+          accountname = $SNOWSQL_ACCOUNT
+          username = $SNOWSQL_USER
+          password = $SNOWSQL_PWD
+          rolename = $SNOWSQL_ROLE
+          warehousename = $SNOWSQL_WH
+          dbname = $SNOWSQL_DB
+          EOF
+          chmod 600 ~/.snowsql/config
+
+          # Deploy SQL files
+          echo "Executing SQL files..."
+          for sql_file in sql/*.sql; do
+            if [ -f "$sql_file" ]; then
+              echo "Executing $sql_file"
+              snowsql -c prod -f "$sql_file" \
+                --variable SNOWSQL_ENVVAR_ROLE=$SNOWSQL_ROLE \
+                --variable SNOWSQL_ENVVAR_DB=$SNOWSQL_DB \
+                --variable SNOWSQL_ENVVAR_WH=$SNOWSQL_WH \
+                --variable SNOWSQL_ENVVAR_SCHEMA=$SNOWSQL_SCHEMA
+            fi
+          done
+

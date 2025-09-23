@@ -1,0 +1,10 @@
+-- Grant access to existing objects
+!set variable_substitution=true;
+
+USE ROLE SYSADMIN;
+USE DATABASE &SNOWSQL_ENVVAR_DB;
+USE SCHEMA &SNOWSQL_ENVVAR_SCHEMA;
+
+-- Grant access to existing tables to both roles
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA &SNOWSQL_ENVVAR_SCHEMA 
+  TO ROLE &SNOWSQL_ENVVAR_ROLE, DEV_ROLE;
