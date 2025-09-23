@@ -39,40 +39,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      - name: Install schemachange
-        run: pip install schemachange
-
-      - name: Create schemachange config directory
-        run: mkdir -p .schemachange
-
-      - name: Configure schemachange
+      - name: Install SnowSQL
         run: |
-          cat > .schemachange/connections.toml << EOF
-          [default]
-          account = "${{ secrets.SNOWFLAKE_ACCOUNT }}"
-          user = "${{ secrets.SNOWFLAKE_USERNAME }}"
-          password = "${{ secrets.SNOWFLAKE_PASSWORD }}"
-          role = "DEV_ROLE"
-          warehouse = "DEV_WH"
-          database = "DEV_DB"
-          schema = "PUBLIC"
-          EOF
-
-      # - name: Deploy to Snowflake
-      #   run: |
-      #     schemachange deploy \
-      #       -f $GITHUB_WORKSPACE/sql \
-      #       --create-change-history-table \
-      #       -v \
-      #       --vars '{"ROLE":"DEV_ROLE", "DATABASE":"DEV_DB", "WAREHOUSE":"DEV_WH", "SCHEMA":"PUBLIC"}'
-      #     curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
-      #     sudo alien -i snowsql.rpm
-      #     export PATH=/usr/bin:$PATH
+          sudo apt-get update
+          sudo apt-get install -y alien
+          curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
+          sudo alien -i snowsql.rpm
+          export PATH=/usr/bin:$PATH
 
       - name: Configure and Deploy to DEV
         env:
@@ -84,13 +57,7 @@ jobs:
           SNOWSQL_WH: DEV_WH
           SNOWSQL_SCHEMA: PUBLIC
         run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          echo "Step 1: Running schemachange"
-          pip install sqlfluff schemachange
-          # schemachange -f $GITHUB_WORKSPACE/sql -a $SNOWSQL_ACCOUNT -u $SNOWSQL_USER -r $SNOWSQL_ROLE -w $SNOWSQL_WH -d $SNOWSQL_DB -c $SNOWSQL_DB.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
-
           # Configure SnowSQL
-          echo "Step 2: Configuring SnowSQL"
           mkdir -p ~/.snowsql
           cat > ~/.snowsql/config << EOF
           [connections.dev]
