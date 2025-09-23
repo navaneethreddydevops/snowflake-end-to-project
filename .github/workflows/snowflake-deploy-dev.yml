@@ -39,11 +39,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Install OpenSSL dependencies
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y openssl libssl-dev
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -68,16 +63,16 @@ jobs:
           schema = "PUBLIC"
           EOF
 
-      - name: Deploy to Snowflake
-        run: |
-          schemachange deploy \
-            -f $GITHUB_WORKSPACE/sql \
-            --create-change-history-table \
-            -v \
-            --vars '{"ROLE":"DEV_ROLE", "DATABASE":"DEV_DB", "WAREHOUSE":"DEV_WH", "SCHEMA":"PUBLIC"}'
-          curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
-          sudo alien -i snowsql.rpm
-          export PATH=/usr/bin:$PATH
+      # - name: Deploy to Snowflake
+      #   run: |
+      #     schemachange deploy \
+      #       -f $GITHUB_WORKSPACE/sql \
+      #       --create-change-history-table \
+      #       -v \
+      #       --vars '{"ROLE":"DEV_ROLE", "DATABASE":"DEV_DB", "WAREHOUSE":"DEV_WH", "SCHEMA":"PUBLIC"}'
+      #     curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
+      #     sudo alien -i snowsql.rpm
+      #     export PATH=/usr/bin:$PATH
 
       - name: Configure and Deploy to DEV
         env:
