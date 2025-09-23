@@ -70,8 +70,16 @@ jobs:
           # Deploy SQL files
           export PATH=/usr/bin:$PATH
           
-          # Execute all SQL files with variables
-          for sql_file in sql/*.sql; do
+          # First execute setup with ACCOUNTADMIN
+          echo "Executing setup with ACCOUNTADMIN..."
+          snowsql -c dev -f sql/00_setup.sql \
+            --variable SNOWSQL_ENVVAR_ROLE=DEV_ROLE \
+            --variable SNOWSQL_ENVVAR_DB=DEV_DB \
+            --variable SNOWSQL_ENVVAR_WH=DEV_WH \
+            --variable SNOWSQL_ENVVAR_SCHEMA=PUBLIC
+          
+          # Then execute remaining SQL files with DEV_ROLE
+          for sql_file in sql/[1-9]*.sql; do
             if [ -f "$sql_file" ]; then
               echo "Executing $sql_file"
               snowsql -c dev -f "$sql_file" \
