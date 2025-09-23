@@ -1,6 +1,12 @@
 -- Test deployment SQL file
 -- Creates a test table in the environment
 
+-- Set context (using variables passed from deployment)
+USE ROLE &{env_role};
+USE DATABASE &{env_db};
+USE WAREHOUSE &{env_wh};
+USE SCHEMA &{env_schema};
+
 -- Create a test table
 CREATE TABLE IF NOT EXISTS test_deployment (
     id INTEGER,
