@@ -68,11 +68,16 @@ jobs:
           chmod 600 ~/.snowsql/config
 
           # Deploy SQL files
-          export PATH=~/snowflake:$PATH
-          for sql_file in sql/*.sql; do
+          export PATH=/usr/bin:$PATH
+          
+          # Execute setup file first with variables
+          echo "Executing setup file..."
+          snowsql -c dev -f sql/00_setup.sql -D env_role=DEV_ROLE -D env_db=DEV_DB -D env_wh=DEV_WH -D env_schema=PUBLIC
+          
+          # Execute other SQL files
+          for sql_file in sql/[1-9]*.sql; do
             if [ -f "$sql_file" ]; then
               echo "Executing $sql_file"
               snowsql -c dev -f "$sql_file"
             fi
           done
-          
