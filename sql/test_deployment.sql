@@ -1,11 +1,12 @@
 -- Test deployment SQL file
 -- Creates a test table in the environment
 
--- Set context (using variables passed from deployment)
-USE ROLE &{env_role};
-USE DATABASE &{env_db};
-USE WAREHOUSE &{env_wh};
-USE SCHEMA &{env_schema};
+!set variable_substitution=true
+
+USE ROLE $SNOWSQL_ENVVAR_ROLE;
+USE DATABASE $SNOWSQL_ENVVAR_DB;
+USE WAREHOUSE $SNOWSQL_ENVVAR_WH;
+USE SCHEMA $SNOWSQL_ENVVAR_SCHEMA;
 
 -- Create a test table
 CREATE TABLE IF NOT EXISTS test_deployment (

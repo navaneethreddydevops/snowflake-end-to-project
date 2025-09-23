@@ -1,7 +1,7 @@
 -- This file handles environment setup and variable definitions
 !set variable_substitution=true;
 
-USE ROLE &{env_role};
-USE DATABASE &{env_db};
-USE WAREHOUSE &{env_wh};
-USE SCHEMA &{env_schema};
+USE ROLE $SNOWSQL_ENVVAR_ROLE;
+USE DATABASE $SNOWSQL_ENVVAR_DB;
+USE WAREHOUSE $SNOWSQL_ENVVAR_WH;
+USE SCHEMA $SNOWSQL_ENVVAR_SCHEMA;
