@@ -63,10 +63,10 @@ jobs:
           ~/snowflake/snowsql -a "$SNOWFLAKE_ACCOUNT" \
                              -u "$SNOWFLAKE_USERNAME" \
                              -p "$SNOWFLAKE_PASSWORD" \
-                             -v env_role="$SNOWFLAKE_ROLE" \
-                             -v env_db="$SNOWFLAKE_DATABASE" \
-                             -v env_wh="$SNOWFLAKE_WAREHOUSE" \
-                             -v env_schema="RAW" \
+                             -D env_role="$SNOWFLAKE_ROLE" \
+                             -D env_db="$SNOWFLAKE_DATABASE" \
+                             -D env_wh="$SNOWFLAKE_WAREHOUSE" \
+                             -D env_schema="RAW" \
                              -f sql/00_setup.sql
           
           # Then run all other SQL files
