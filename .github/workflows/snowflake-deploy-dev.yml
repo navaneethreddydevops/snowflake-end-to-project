@@ -1,0 +1,51 @@
+name: Snowflake SQL Dev Deployment
+
+on:
+  push:
+    paths:
+      - "sql/**"
+  workflow_dispatch:
+
+jobs:
+  deploy-dev:
+    name: Deploy to DEV
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.24-linux_x86_64.bash
+          mkdir -p ~/snowflake
+          SNOWSQL_DEST=~/snowflake SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.24-linux_x86_64.bash
+          export PATH=~/snowflake:$PATH
+
+      - name: Configure and Deploy to DEV
+        env:
+          SF_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SF_USER: ${{ secrets.SNOWFLAKE_USERNAME }}
+          SF_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+        run: |
+          # Configure SnowSQL
+          mkdir -p ~/.snowsql
+          cat > ~/.snowsql/config << EOF
+          [connections.dev]
+          accountname = $SF_ACCOUNT
+          username = $SF_USER
+          password = $SF_PASSWORD
+          rolename = DEV_ROLE
+          warehousename = DEV_WH
+          dbname = DEV_DB
+          EOF
+          chmod 600 ~/.snowsql/config
+
+          # Deploy SQL files
+          export PATH=~/snowflake:$PATH
+          for sql_file in sql/*.sql; do
+            if [ -f "$sql_file" ]; then
+              echo "Executing $sql_file"
+              snowsql -c dev -f "$sql_file"
+            fi
+          done
