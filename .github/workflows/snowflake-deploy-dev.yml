@@ -39,18 +39,36 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Install OpenSSL dependencies
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y openssl libssl-dev
+      - name: Cache SnowSQL
+        id: cache-snowsql
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/bin/snowsql
+          key: snowsql-${{ runner.os }}-1.2.24
 
       - name: Install SnowSQL
+        if: steps.cache-snowsql.outputs.cache-hit != 'true'
+        env:
+          SNOWSQL_VERSION: "1.2.24"
+          SNOWSQL_SHA256: "e895d0a6483915ec1dbbf4943de6709ca0d034ad29785336ce83da61d85c9a88"
         run: |
-          sudo apt-get update
-          sudo apt-get install -y alien
-          curl -L -o snowsql.rpm "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.4/linux_x86_64/snowflake-snowsql-1.4.5-1.x86_64.rpm?_fsi=iRiJQI74"
-          sudo alien -i snowsql.rpm
-          export PATH=/usr/bin:$PATH
+          # Download and verify SnowSQL installer with retry logic
+          for i in {1..3}; do
+            curl -SL --retry 3 "https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/$SNOWSQL_VERSION/linux_x86_64/snowsql-linux_x86_64.bash" -o snowsql-linux_x86_64.bash && break
+            sleep 5
+          done
+          
+          # Verify checksum
+          echo "$SNOWSQL_SHA256  snowsql-linux_x86_64.bash" | sha256sum -c -
+          
+          # Install SnowSQL
+          chmod +x snowsql-linux_x86_64.bash
+          SNOWSQL_DEST=/usr/local/bin SNOWSQL_LOGIN_SHELL=~/.profile ./snowsql-linux_x86_64.bash
+
+      - name: Verify SnowSQL Installation
+        run: |
+          export PATH="/usr/local/bin:$PATH"
+          snowsql --version
 
       - name: Configure and Deploy to DEV
         env:
