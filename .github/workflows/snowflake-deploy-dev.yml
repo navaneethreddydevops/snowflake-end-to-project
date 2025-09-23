@@ -69,15 +69,15 @@ jobs:
 
           # Deploy SQL files
           export PATH=/usr/bin:$PATH
-          export SNOWSQL_ENVVAR_ROLE=DEV_ROLE
-          export SNOWSQL_ENVVAR_DB=DEV_DB
-          export SNOWSQL_ENVVAR_WH=DEV_WH
-          export SNOWSQL_ENVVAR_SCHEMA=PUBLIC
           
-          # Execute all SQL files
+          # Execute all SQL files with variables
           for sql_file in sql/*.sql; do
             if [ -f "$sql_file" ]; then
               echo "Executing $sql_file"
-              snowsql -c dev -f "$sql_file"
+              snowsql -c dev -f "$sql_file" \
+                --variable SNOWSQL_ENVVAR_ROLE=DEV_ROLE \
+                --variable SNOWSQL_ENVVAR_DB=DEV_DB \
+                --variable SNOWSQL_ENVVAR_WH=DEV_WH \
+                --variable SNOWSQL_ENVVAR_SCHEMA=PUBLIC
             fi
           done
