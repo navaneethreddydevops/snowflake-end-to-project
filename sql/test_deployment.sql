@@ -1,9 +1,9 @@
 -- Test deployment SQL file
 -- Creates a test table in the DEV environment
 
-USE DATABASE ${env_db};
-USE WAREHOUSE ${env_wh};
-USE SCHEMA ${env_schema};
+USE DATABASE &env_db;
+USE WAREHOUSE &env_wh;
+USE SCHEMA &env_schema;
 
 -- Create a test table
 CREATE TABLE IF NOT EXISTS test_deployment (
