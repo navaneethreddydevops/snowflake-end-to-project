@@ -19,4 +19,3 @@ CREATE TABLE IF NOT EXISTS test_deployment (
 INSERT INTO test_deployment (id, test_name)
 VALUES (1, 'Initial Deployment Test');
 
-DROP TABLE IF EXISTS test_deployment;
