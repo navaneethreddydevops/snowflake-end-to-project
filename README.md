@@ -168,3 +168,10 @@ This repository contains the setup for DEV and QA environments in Snowflake.
    USE WAREHOUSE DEV_WH;  -- or QA_WH
    USE DATABASE DEV_DB;   -- or QA_DB
    ```
+
+
+
+
+
+https://medium.com/snowflake/role-based-access-control-rbac-with-snowflake-database-roles-425f560c1873
+https://medium.com/snowflake/role-based-access-control-rbac-with-secondary-roles-8ce3c7bb57df
