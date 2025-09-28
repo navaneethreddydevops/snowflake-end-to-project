@@ -56,3 +56,6 @@ BEGIN
 END;
 $$
 COMMENT = 'Stored procedure to generate monthly sales and performance reports';
+
+-- Grant execution permissions to appropriate roles
+GRANT USAGE ON PROCEDURE SP_GENERATE_MONTHLY_REPORTS() TO ROLE &SNOWSQL_ENVVAR_ROLE;

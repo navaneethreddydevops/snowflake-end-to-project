@@ -45,5 +45,9 @@ END;
 $$
 COMMENT = 'Daily task to promote staging data to curated layer and update metrics';
 
+-- Set task ownership and grant permissions
+GRANT OWNERSHIP ON TASK TASK_PROMOTE_TO_CURATED TO ROLE &SNOWSQL_ENVVAR_ROLE;
+GRANT OPERATE ON TASK TASK_PROMOTE_TO_CURATED TO ROLE &SNOWSQL_ENVVAR_ROLE;
+
 -- Start the task (commented out for initial deployment)
 -- ALTER TASK TASK_PROMOTE_TO_CURATED RESUME;

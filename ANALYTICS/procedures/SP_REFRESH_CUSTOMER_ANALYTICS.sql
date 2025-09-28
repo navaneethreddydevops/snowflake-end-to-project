@@ -82,3 +82,7 @@ BEGIN
 END;
 $$
 COMMENT = 'Stored procedure to refresh customer analytics data';
+
+-- Grant execution permissions to appropriate roles
+-- Note: These grants will be applied based on the environment role
+GRANT USAGE ON PROCEDURE SP_REFRESH_CUSTOMER_ANALYTICS() TO ROLE &SNOWSQL_ENVVAR_ROLE;

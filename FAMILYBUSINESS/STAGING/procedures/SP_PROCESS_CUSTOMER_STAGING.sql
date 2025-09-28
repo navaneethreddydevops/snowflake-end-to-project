@@ -92,3 +92,6 @@ BEGIN
 END;
 $$
 COMMENT = 'Process raw customer data into staging with quality checks';
+
+-- Grant execution permissions to appropriate roles
+GRANT USAGE ON PROCEDURE SP_PROCESS_CUSTOMER_STAGING() TO ROLE &SNOWSQL_ENVVAR_ROLE;

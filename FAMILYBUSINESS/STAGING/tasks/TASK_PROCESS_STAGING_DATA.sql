@@ -26,5 +26,9 @@ END;
 $$
 COMMENT = 'Daily task to process raw data into staging tables';
 
+-- Set task ownership and grant permissions
+GRANT OWNERSHIP ON TASK TASK_PROCESS_STAGING_DATA TO ROLE &SNOWSQL_ENVVAR_ROLE;
+GRANT OPERATE ON TASK TASK_PROCESS_STAGING_DATA TO ROLE &SNOWSQL_ENVVAR_ROLE;
+
 -- Start the task (commented out for initial deployment)
 -- ALTER TASK TASK_PROCESS_STAGING_DATA RESUME;

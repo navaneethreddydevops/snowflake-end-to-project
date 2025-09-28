@@ -93,3 +93,6 @@ BEGIN
 END;
 $$
 COMMENT = 'Promote high-quality staging data to curated layer';
+
+-- Grant execution permissions to appropriate roles
+GRANT USAGE ON PROCEDURE SP_PROMOTE_TO_CURATED() TO ROLE &SNOWSQL_ENVVAR_ROLE;

@@ -95,3 +95,6 @@ BEGIN
 END;
 $$
 COMMENT = 'Process raw order data into staging with quality checks and date dimensions';
+
+-- Grant execution permissions to appropriate roles
+GRANT USAGE ON PROCEDURE SP_PROCESS_ORDER_STAGING() TO ROLE &SNOWSQL_ENVVAR_ROLE;
