@@ -5,14 +5,14 @@ on:
     branches:
       - develop
     paths:
-      - 'ANALYTICS/**'
-      - 'REPORTING/**'
-      - 'FAMILYBUSINESS/**'
+      - "ANALYTICS/**"
+      - "REPORTING/**"
+      - "FAMILYBUSINESS/**"
   pull_request:
     paths:
-      - 'ANALYTICS/**'
-      - 'REPORTING/**'
-      - 'FAMILYBUSINESS/**'
+      - "ANALYTICS/**"
+      - "REPORTING/**"
+      - "FAMILYBUSINESS/**"
   workflow_dispatch:
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         database: [ANALYTICS, REPORTING, FAMILYBUSINESS]
-    
+
     steps:
       - uses: actions/checkout@v3
 
@@ -77,7 +77,7 @@ jobs:
           chmod 600 ~/.snowsql/config
 
           echo "Deploying $DATABASE database to DEV environment..."
-          
+
           # Function to deploy SQL files
           deploy_sql_files() {
             local folder=$1
@@ -128,5 +128,5 @@ jobs:
             deploy_sql_files "views"
             deploy_sql_files "tasks"
           fi
-          
+
           echo "$DATABASE deployment to DEV completed successfully!"
