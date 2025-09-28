@@ -9,7 +9,7 @@ USE SCHEMA &SNOWSQL_ENVVAR_SCHEMA;
 USE SCHEMA RAW;
 
 -- Create file format for CSV ingestion
-CREATE OR REPLACE FILE FORMAT csv_format
+CREATE OR REPLACE FILE FORMAT RAW_CSV_FORMAT
     TYPE = 'CSV'
     FIELD_DELIMITER = ','
     RECORD_DELIMITER = '\n'
@@ -21,18 +21,22 @@ CREATE OR REPLACE FILE FORMAT csv_format
     ESCAPE_UNENCLOSED_FIELD = '\134'
     DATE_FORMAT = 'YYYY-MM-DD'
     TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS'
-    NULL_IF = ('NULL', 'null', '', 'N/A', 'n/a');
+    NULL_IF = ('NULL', 'null', '', 'N/A', 'n/a')
+    COMPRESSION = 'AUTO'
+COMMENT = 'File format for raw data CSV ingestion';
 
 -- Create file format for JSON ingestion
-CREATE OR REPLACE FILE FORMAT json_format
+CREATE OR REPLACE FILE FORMAT RAW_JSON_FORMAT
     TYPE = 'JSON'
     STRIP_OUTER_ARRAY = TRUE
     STRIP_NULL_VALUES = FALSE
     REPLACE_INVALID_CHARACTERS = TRUE
     DATE_FORMAT = 'AUTO'
-    TIMESTAMP_FORMAT = 'AUTO';
+    TIMESTAMP_FORMAT = 'AUTO'
+COMMENT = 'File format for raw data JSON ingestion';
 
 -- Create file format for Parquet ingestion
-CREATE OR REPLACE FILE FORMAT parquet_format
+CREATE OR REPLACE FILE FORMAT RAW_PARQUET_FORMAT
     TYPE = 'PARQUET'
-    BINARY_AS_TEXT = FALSE;
+    BINARY_AS_TEXT = FALSE
+COMMENT = 'File format for raw data Parquet ingestion';

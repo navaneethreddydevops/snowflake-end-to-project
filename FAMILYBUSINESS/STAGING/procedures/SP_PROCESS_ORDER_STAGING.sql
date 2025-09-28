@@ -1,0 +1,97 @@
+!set variable_substitution=true;
+
+USE ROLE &SNOWSQL_ENVVAR_ROLE;
+USE DATABASE &SNOWSQL_ENVVAR_DB;
+USE WAREHOUSE &SNOWSQL_ENVVAR_WH;
+USE SCHEMA &SNOWSQL_ENVVAR_SCHEMA;
+
+-- Use STAGING schema
+USE SCHEMA STAGING;
+
+-- Create stored procedure for processing order staging data
+CREATE OR REPLACE PROCEDURE SP_PROCESS_ORDER_STAGING()
+RETURNS STRING
+LANGUAGE SQL
+AS
+$$
+BEGIN
+    LET RESULT STRING := '';
+    LET PROCESSED_COUNT NUMBER := 0;
+    
+    -- Clear staging table
+    TRUNCATE TABLE STG_ORDERS;
+    
+    -- Process raw order data with transformations and quality checks
+    INSERT INTO STG_ORDERS (
+        ORDER_ID,
+        CUSTOMER_ID,
+        ORDER_DATE,
+        ORDER_STATUS,
+        ORDER_STATUS_STANDARDIZED,
+        TOTAL_AMOUNT,
+        CURRENCY_CODE,
+        PAYMENT_METHOD,
+        PAYMENT_METHOD_STANDARDIZED,
+        SHIPPING_ADDRESS,
+        BILLING_ADDRESS,
+        SALES_CHANNEL,
+        SALES_REP_ID,
+        REGION,
+        ORDER_YEAR,
+        ORDER_MONTH,
+        ORDER_QUARTER,
+        IS_VALID_ORDER,
+        DATA_QUALITY_SCORE,
+        DATA_QUALITY_FLAGS,
+        SOURCE_SYSTEM
+    )
+    SELECT 
+        ORDER_ID,
+        CUSTOMER_ID,
+        ORDER_DATE,
+        ORDER_STATUS,
+        UPPER(TRIM(ORDER_STATUS)) AS ORDER_STATUS_STANDARDIZED,
+        TOTAL_AMOUNT,
+        UPPER(TRIM(CURRENCY_CODE)) AS CURRENCY_CODE,
+        PAYMENT_METHOD,
+        UPPER(TRIM(PAYMENT_METHOD)) AS PAYMENT_METHOD_STANDARDIZED,
+        SHIPPING_ADDRESS,
+        BILLING_ADDRESS,
+        SALES_CHANNEL,
+        SALES_REP_ID,
+        REGION,
+        YEAR(ORDER_DATE) AS ORDER_YEAR,
+        MONTH(ORDER_DATE) AS ORDER_MONTH,
+        QUARTER(ORDER_DATE) AS ORDER_QUARTER,
+        CASE 
+            WHEN CUSTOMER_ID IS NOT NULL AND ORDER_DATE IS NOT NULL AND TOTAL_AMOUNT > 0 THEN TRUE
+            ELSE FALSE
+        END AS IS_VALID_ORDER,
+        -- Data quality score calculation
+        CASE 
+            WHEN CUSTOMER_ID IS NULL THEN 0.5
+            WHEN ORDER_DATE IS NULL THEN 0.6
+            WHEN TOTAL_AMOUNT IS NULL OR TOTAL_AMOUNT <= 0 THEN 0.7
+            WHEN ORDER_STATUS IS NULL OR ORDER_STATUS = '' THEN 0.9
+            ELSE 1.0
+        END AS DATA_QUALITY_SCORE,
+        -- Data quality flags
+        ARRAY_TO_STRING(
+            ARRAY_COMPACT([
+                IFF(CUSTOMER_ID IS NULL, 'MISSING_CUSTOMER_ID', NULL),
+                IFF(ORDER_DATE IS NULL, 'MISSING_ORDER_DATE', NULL),
+                IFF(TOTAL_AMOUNT IS NULL OR TOTAL_AMOUNT <= 0, 'INVALID_AMOUNT', NULL),
+                IFF(ORDER_STATUS IS NULL OR ORDER_STATUS = '', 'MISSING_STATUS', NULL)
+            ]), 
+            ','
+        ) AS DATA_QUALITY_FLAGS,
+        SOURCE_SYSTEM
+    FROM RAW.RAW_ORDERS;
+    
+    SET PROCESSED_COUNT = (SELECT COUNT(*) FROM STG_ORDERS);
+    SET RESULT = 'Successfully processed ' || :PROCESSED_COUNT || ' order records';
+    
+    RETURN :RESULT;
+END;
+$$
+COMMENT = 'Process raw order data into staging with quality checks and date dimensions';

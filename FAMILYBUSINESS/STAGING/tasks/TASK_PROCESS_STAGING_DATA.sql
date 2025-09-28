@@ -9,17 +9,17 @@ USE SCHEMA &SNOWSQL_ENVVAR_SCHEMA;
 USE SCHEMA STAGING;
 
 -- Create task for processing staging data
-CREATE OR REPLACE TASK task_process_staging_data
+CREATE OR REPLACE TASK TASK_PROCESS_STAGING_DATA
     WAREHOUSE = &SNOWSQL_ENVVAR_WH
     SCHEDULE = 'CRON 0 4 * * * UTC' -- Run at 4 AM UTC daily
 AS
 $$
 BEGIN
     -- Process customer staging data
-    CALL sp_process_customer_staging();
+    CALL SP_PROCESS_CUSTOMER_STAGING();
     
     -- Process order staging data
-    CALL sp_process_order_staging();
+    -- CALL SP_PROCESS_ORDER_STAGING();
     
     -- Add additional staging processing as needed
 END;
@@ -27,4 +27,4 @@ $$
 COMMENT = 'Daily task to process raw data into staging tables';
 
 -- Start the task (commented out for initial deployment)
--- ALTER TASK task_process_staging_data RESUME;
+-- ALTER TASK TASK_PROCESS_STAGING_DATA RESUME;
