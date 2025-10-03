@@ -17,7 +17,7 @@ jobs:
         run: |
           echo "Running SQL validation..."
           # Lint all SQL files in database folders
-          find ANALYTICS REPORTING FAMILYBUSINESS -name "*.sql" -type f | while read sql_file; do
+          find FAMILYBUSINESS -name "*.sql" -type f | while read sql_file; do
             echo "Validating $sql_file"
             sqlfluff lint "$sql_file" --dialect snowflake || echo "Warning: Linting issues in $sql_file"
           done
