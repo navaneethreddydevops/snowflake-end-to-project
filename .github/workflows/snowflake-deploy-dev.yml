@@ -1,18 +1,6 @@
 name: Snowflake DEV Deployment
 
 on:
-  push:
-    branches:
-      - develop
-    paths:
-      - "ANALYTICS/**"
-      - "REPORTING/**"
-      - "FAMILYBUSINESS/**"
-  pull_request:
-    paths:
-      - "ANALYTICS/**"
-      - "REPORTING/**"
-      - "FAMILYBUSINESS/**"
   workflow_dispatch:
 
 jobs:
