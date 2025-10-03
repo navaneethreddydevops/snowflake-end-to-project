@@ -1,4 +1,4 @@
-name: Snowflake DEV Deployment
+name: Full Deployment
 
 on:
   workflow_dispatch:
